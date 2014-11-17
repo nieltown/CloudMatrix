@@ -1,0 +1,60 @@
+FORMAT: 1A
+
+# CloudMatrix
+Cloud Matrix is a REST API for performing various operations related to matrices and vectors.
+
+# Group Matrices
+Matrix resources for the **CloudMatrix API**
+
+## Data Storage [/data]
+### List all Stored Matrices [GET]
++ Response 200 (application/json)
+
+        [{
+          "id": 1, "name": "A", "owner" : "bcrosby", "m" : 2, "n" : 2
+        }, {
+          "id": 2, "name": "B", "owner" : "bhope", "m" : 2, "n" : 3
+        }]
+
+### Create and Store a Matrix [POST]
++ Request (application/json)
+
+        { "name": "A", "owner" : "bcrosby", "m" : 2, "n" : 2, "data" : "[1, 2; 3, 4]" }
+
++ Response 201 (application/json)
+
+        { "id": 1, "name": "A", "owner" : "bcrosby", "m" : 2, "n" : 2 }
+
+## Matrix Operations [/operations]
+### Return the inverse of a matrix [GET]
++ Request (application/json)
+
+        { "name": "A", "owner" : "bcrosby", "operation" : "inverse" }
+
++ Response 200 (application/json)
+
+        { "id" : 3, "name": "A_inverse", "owner" : "bcrosby", "data" : "[-2.0, 1.0; 1.5, -0.5]" } }
+
+## Matrix [/data/{id}{name}{owner}]
+A single object representing an m x n matrix, plus any related attributes and metadata
+
++ Parameters
+    + id (required, number, `1`) ... Numeric `id` of the Matrix to perform action with. Has example value.
+    + name (required, string) ... Name of the matrix unique to its owner, i.e. a variable name -->
+    + owner (required, string) ... The username of the owner of this matrix
+    + m (required, number) ...  The number of rows in the matrix
+    + n (required, number ) ... The number of columns in the matrix
+
+### Retrieve a Matrix [GET]
++ Response 200 (application/json)
+
+    + Header
+
+            X-My-Header: The Value
+
+    + Body
+
+            { "id": 2, "name": "A", "owner" : "bcrosby", "[1, 2; 3, 4]" }
+
+### Remove a Matrix [DELETE]
++ Response 204
