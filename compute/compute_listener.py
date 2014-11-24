@@ -15,6 +15,8 @@ rowlist = []
 while True:
     msg = socket.recv()
 
+    rowlist = []
+
     for line in msg.split('\n'):
         
         if line:
@@ -25,17 +27,14 @@ while True:
             row = map(float,line.replace(';','').split(','))
             rowlist.append(row)
     
-    print rowlist
-    
     arr = numpy.vstack(rowlist)
     
-    print arr.shape
+    print "---"
+    print arr
+    print "---"
+    
     
     inv = numpy.linalg.inv(arr)
-     
-    print "---"
-     
-    print inv
     
 #     redisEndpoint = ''
 #     redisPort = 6379
@@ -44,5 +43,5 @@ while True:
 #     
 #     val = str(r.keys())
     
-    socket.send(msg)
+    socket.send(str(inv))
 
