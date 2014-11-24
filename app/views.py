@@ -16,11 +16,13 @@ def index():
 	socket = context.socket(zmq.REQ)
 	socket.connect("tcp://54.173.133.81:%s" % port)
 	
-	socket.send(request.remote_addr)
+	csv = open('/home/ubuntu/cloudmatrix/data/inverse_01.csv','r')
 	
+	data = csv.read()
+
+	socket.send(data)
 	
 	msg = socket.recv()
-	
 	
 	return msg
 	
