@@ -6,6 +6,7 @@ import os
 import zmq
 import requests
 
+import redis_util
 import zk_util
 from forms import UploadForm
 
@@ -15,21 +16,38 @@ def upload():
 	
 	if request.method == 'POST':
 		file = request.files['myFile']
-		print file
+		print "/upload POST"
 		file.save('../' + file.filename)
 		return render_template('thanks.html', title='Successful upload', filename = file.filename)
 	else:
+		print "/upload GET"
 		return render_template('upload.html', title='Upload CSV',form=form)
 
 @app.route('/data', methods = ['GET'])
 def get_data():
-	return "i got your data right here, pal"
+	
+	print "getting endpoint"
+	redis_endpoint = zk.get_redis_endpoint()
+	
+	print "creating redis_util"
+	ru = redis_util.redis_util(redis_endpoint)
+	
+	print "getting keys"
+	keys = ru.r.keys(request.remote_addr)
+	
+	if len(keys) == 0:
+		print "FUCK"
+	
+	return str(keys)
+	
+	
+	
+	
+	
 
 @app.route('/')
 @app.route('/index')
 def index():
-	
-	print "blah blah blah"
 	
 	port = "80"
 	context = zmq.Context()
