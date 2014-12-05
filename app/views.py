@@ -1,5 +1,6 @@
 from flask import render_template
 from flask import request
+from flask import jsonify
 from app import app
 import os
 import zmq
@@ -60,6 +61,10 @@ def init_zk_hosts():
 	host_string = ','.join(hosts)
 	
 	return host_string
+
+@app.route("/get_my_ip", methods=["GET"])
+def get_my_ip():
+    return jsonify({'ip': request.remote_addr}), 200
 
 host_string = init_zk_hosts()
 zk = zk_util.zk_util(host_string)
