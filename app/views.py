@@ -5,6 +5,9 @@ from app import app
 import os
 import zmq
 import requests
+import hashlib
+import random
+import ast
 
 import redis_util
 import zk_util
@@ -23,51 +26,83 @@ def upload():
 		print "/upload GET"
 		return render_template('upload.html', title='Upload CSV',form=form)
 
+
+# Returns the inverse of a specified matrix 
+# (specified by name in user's scope)
+@app.route('/inverse', methods = ['GET'])
+def inverse():
+	return 'blech'
+
 @app.route('/data', methods = ['GET'])
 def get_data():
-	
-	print "getting endpoint"
-	redis_endpoint = zk.get_redis_endpoint()
-	
-	print "creating redis_util"
-	ru = redis_util.redis_util(redis_endpoint)
+	m = hashlib.md5()
+ 	
+ 	ip = get_my_ip()
+ 	
+ 	print ip
+ 	
+	m.update("%spoop" % ip)
+ 	
+	key = m.digest()
+ 	
+ 	if ru.r.get(key):
+ 		return "key %s is present!" % key
+ 	
+	value = {"name":"blah","m":35,"n":36}
+ 	
+	print "key: %s" % key
+ 	
+	ru.r.set(key, value)
+# 	
+# 	print "value: %s" % ru.r.get(key)
 	
 	print "getting keys"
-	keys = ru.r.keys(request.remote_addr)
-	
-	if len(keys) == 0:
-		print "FUCK"
-	
-	return str(keys)
-	
-	
-	
-	
-	
+	keys = ru.r.keys()
+
+	response = ""	
+	for key in keys:
+# 		ru.r.delete(key)
+		print "key: %s" % key
+		print "\t%s" % ru.r.get(key)
+
+	return str(response)
 
 @app.route('/')
 @app.route('/index')
 def index():
 	
-	port = "80"
-	context = zmq.Context()
-	socket = context.socket(zmq.REQ)
+	sample_matrix_list = [{'name':'a','m':3,'n':3},{'name':'poop','m':32,'n':32}]
 	
-	compute_node = zk.get_compute_node()
+	keys = ru.r.keys()
+	
+	matrix_list = []
+	
+	for key in keys:
+		value = ru.r.get(key)
+		print "value: %s" % value
+		
+		matrix_list.append(value)
+		
+	return render_template('index.html', matrix_list=keys, user={'nickname':'Nieltown'})
+# 	port = "80"
+# 	context = zmq.Context()
+# 	socket = context.socket(zmq.REQ)
+# 	
+# 	compute_node = zk.get_compute_node()
+# 
+# 	socket.connect("tcp://%s:%s" % (compute_node, port))
+# 	
+# 	csv = open('/home/ubuntu/cloudmatrix/data/inverse_01.csv','r')
+# 
+# 	data = csv.read()
+# 
+# 	socket.send(data)
+# 
+# 	msg = socket.recv()
+# 	
+# 	return msg
+	
 
-	socket.connect("tcp://%s:%s" % (compute_node, port))
-	
-	csv = open('/home/ubuntu/cloudmatrix/data/inverse_01.csv','r')
-
-	data = csv.read()
-
-	socket.send(data)
-
-	msg = socket.recv()
-	
-	return msg
-	
-	
 def init_zk_hosts():
 	hosts = []
 	
@@ -83,8 +118,24 @@ def init_zk_hosts():
 
 @app.route("/get_my_ip", methods=["GET"])
 def get_my_ip():
-    return jsonify({'ip': request.remote_addr}), 200
+    return request.remote_addr
+
+def get_matrix_hash(matrix_name):
+	m = hashlib.md5()
+	ip = get_my_ip()
+				
+	m.update("%s%s" % (ip, matrix_name))
+	
+	return m.digest()
 
 host_string = init_zk_hosts()
 zk = zk_util.zk_util(host_string)
+
+print "getting endpoint"
+redis_endpoint = zk.get_redis_primary()
+	
+print "Endpoint: %s" % redis_endpoint
+
+print "creating redis_util"
+ru = redis_util.redis_util(redis_endpoint)
 

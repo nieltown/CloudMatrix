@@ -7,4 +7,19 @@
     </body>
     
     
+    <p>
+    Perform an operation on an existing matrix:
+    </p>
+    <form action="" method="post">
+    <select name="matrices" type="option" width="300px">
+       
+    {% for matrix in matrix_list %}
+        <option name = "{{ matrix.name }}">
+        {{ matrix.name }} : {{ matrix.m }} x {{ matrix.n }}
+        </option>
+     {% endfor %} 
+
+    </select>
+    </form>
+    
 </html>

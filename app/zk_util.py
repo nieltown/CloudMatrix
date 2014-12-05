@@ -20,6 +20,12 @@ class zk_util():
         
         return node
     
+    def get_redis_primary(self):
+        
+        node = self.client.get_children('/%s' % 'redis_endpoints')[0]
+        
+        return 'cloudmatrixredis-001.c5szdq.0001.use1.cache.amazonaws.com'
+    
     def get_nodes(self, node_type):
         
         nodes = self.client.get_children('/%s' % node_type)
