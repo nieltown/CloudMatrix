@@ -12,12 +12,13 @@ from forms import UploadForm
 def upload():
 	form = UploadForm()
 	
-	if form.validate_on_submit():
-		print "Validatin'"
+	if request.method == 'POST':
+		file = request.files['myFile']
+		print file
+		file.save('../' + file.filename)
+		return render_template('thanks.html', title='Successful upload', filename = file.filename)
 	else:
-		print "Nein!"
-	
-	return render_template('upload.html', title='Upload CSV',form=form)
+		return render_template('upload.html', title='Upload CSV',form=form)
 
 @app.route('/data', methods = ['GET'])
 def get_data():
