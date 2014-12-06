@@ -3,23 +3,40 @@
         <title>{{ title }}</title>
     </head>
     <body>
-        <h1>Hello, {{ user.nickname }}!</h1>   
-    </body>
-    
-    
+        <h1>Hello, {{ user }}!</h1>
+        
+    <div name="operationsmenu">
     <p>
     Perform an operation on an existing matrix:
-    </p>
-    <form action="" method="post">
+    <form action="/" method="post">
     <select name="matrices" type="option" width="300px">
        
     {% for matrix in matrix_list %}
         <option name = "{{ matrix.name }}">
-        {{ matrix.name }} : {{ matrix.m }} x {{ matrix.n }}
+        {{ matrix.name }}, {{ matrix.m }} x {{ matrix.n }}
         </option>
      {% endfor %} 
 
     </select>
+    <input type="submit" name="invert" value="Boink!" />
+    <input type="submit" name="invert" value="Doink!" />
+    <input type="submit" name="invert" value="Spoink!" /> 
     </form>
+    </p>
+    </div>
     
+    <div name="uploadmenu">
+    <h1>Upload a CSV</h1>
+    <form action="/upload" method="POST" enctype="multipart/form-data">
+    <p>
+    <input type="file" name="csv" />
+    </p>
+    <p>
+    <input type="submit" name="submit" value="Push It" />
+    </p>
+    </form>
+    </p>
+    </div>
+    
+    </body>
 </html>

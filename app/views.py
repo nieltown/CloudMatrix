@@ -18,10 +18,18 @@ def upload():
 	form = UploadForm()
 	
 	if request.method == 'POST':
-		file = request.files['myFile']
+		file = request.files['csv']
 		print "/upload POST"
-		file.save('../' + file.filename)
-		return render_template('thanks.html', title='Successful upload', filename = file.filename)
+		path = None
+			
+		if len(file.filename) < 1:
+			print "WHOA"
+			title = 'No file uploaded'
+		else:
+			path = './' + file.filename
+			file.save(path)
+			title = 'Successful upload'
+		return render_template('thanks.html', title=title, filename = file.filename, path = path)
 	else:
 		print "/upload GET"
 		return render_template('upload.html', title='Upload CSV',form=form)
@@ -33,6 +41,74 @@ def upload():
 def inverse():
 	return 'blech'
 
+@app.route('/add', methods = ['GET'])
+def add():
+	A = request.args.get('A','')
+	B = request.args.get('B','')
+	
+	port = "80"
+	context = zmq.Context()
+	socket = context.socket(zmq.REQ)
+ 	
+	compute_node = zk.get_compute_node()
+ 
+	socket.connect("tcp://%s:%s" % (compute_node, port))
+ 	
+ 	print "Sending..."
+	socket.send_string('add %s %s %s' % (get_my_ip(), A, B))
+
+ 	print "Sent!"
+ 	
+ 	print "Receiving..."
+	msg = socket.recv()
+	print "Received!"
+
+ 	
+	return msg
+
+@app.route('/getmatrix', methods = ['GET'])
+def getmatrix():
+	
+	name = request.args.get('name','')
+	
+	key = get_my_ip() + name
+	
+	print key
+	m = hashlib.md5()
+	m.update(get_my_ip() + name)
+	
+	key = m.digest()
+	
+	value = ru.r.get(key)
+	
+	dict = ast.literal_eval(value)
+	
+	name = dict['name']
+	m = dict['m']
+	n = dict['n']
+	data = dict['data']
+	datamd5 = dict['datamd5']
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	return str(value)
+	
+	
+
+
 @app.route('/data', methods = ['GET'])
 def get_data():
 	m = hashlib.md5()
@@ -41,7 +117,7 @@ def get_data():
  	
  	print ip
  	
-	m.update("%spoop" % ip)
+	m.update(ip + 'A')
  	
 	key = m.digest()
  	
@@ -67,8 +143,8 @@ def get_data():
 
 	return str(response)
 
-@app.route('/')
-@app.route('/index')
+@app.route('/', methods = ['GET','POST'])
+@app.route('/index', methods = ['GET','POST'])
 def index():
 	
 	sample_matrix_list = [{'name':'a','m':3,'n':3},{'name':'poop','m':32,'n':32}]
@@ -76,30 +152,36 @@ def index():
 	keys = ru.r.keys()
 	
 	matrix_list = []
-	
+
 	for key in keys:
 		value = ru.r.get(key)
 		print "value: %s" % value
 		
-		matrix_list.append(value)
+		# Only try to create a dict out of it if it can
+		# (skip over errors like badly-formed dicts-as-strings
+		try:
+			value_as_dict = ast.literal_eval(value)
+			matrix_list.append(value_as_dict)
+		except:
+			pass
 		
-	return render_template('index.html', matrix_list=keys, user={'nickname':'Nieltown'})
+	return render_template('index.html', title='cloudmatrix', matrix_list=matrix_list, user=get_my_ip())
 # 	port = "80"
 # 	context = zmq.Context()
 # 	socket = context.socket(zmq.REQ)
-# 	
+#  	
 # 	compute_node = zk.get_compute_node()
-# 
+#  
 # 	socket.connect("tcp://%s:%s" % (compute_node, port))
-# 	
+#  	
 # 	csv = open('/home/ubuntu/cloudmatrix/data/inverse_01.csv','r')
-# 
+#  
 # 	data = csv.read()
-# 
+#  
 # 	socket.send(data)
-# 
+#  
 # 	msg = socket.recv()
-# 	
+#  	
 # 	return msg
 	
 
