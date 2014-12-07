@@ -4,8 +4,17 @@ import random
 
 class zk_util():
     
-    def __init__(self, host_string):
+    def __init__(self, host_file):
+        hosts = []
         
+        z = open(host_file)
+        
+        for line in z.readlines():
+            
+            hosts.append(line.replace('\r\n',''))
+        
+        host_string = ','.join(hosts)
+
         self.client = KazooClient(hosts=host_string)
         self.client.start()
         
