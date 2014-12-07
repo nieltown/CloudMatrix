@@ -31,16 +31,18 @@ while True:
     
     print tokens
     
+    # Attempting a valid operation?
     if operation in operations:
+        
+        # If so, get the actual method for the operation from
+        # the Computer
         opfunc = getattr(cc, operation)
         
-        print opfunc
-        
-        opfunc(operands)
+        msg = opfunc(operands)
     
     
     
-    socket.send_string("Got it")
+    socket.send_string(msg)
 #     rowlist = []
 # 
 #     for line in msg.split('\n'):
