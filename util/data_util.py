@@ -7,7 +7,9 @@ class data_util():
     # userid is probably just the requestor's IP because I am lazy
     def get_matrix_hash(self, userid, matrix_name):
         m = hashlib.md5()
-                    
+        
+        print "get_matrix_hash: %s, %s" % (userid, matrix_name)
+        
         m.update("%s%s" % (userid, matrix_name))
         
         return m.digest()  
@@ -21,6 +23,7 @@ class data_util():
         return val
     
     
+        
     def get_userid_hash(self, userid):
         m = hashlib.md5()
                     
@@ -37,6 +40,18 @@ class data_util():
         
         return m.digest()
     
+    # 
+    # Converts a NumPy matrix to a string in the format
+    #    '[1.0,2.0,3.0;4.0,5.0,6.0;7.0,8.0,9.0]'
+    #
+    def matrix_to_string(self, matrix):
+        converted = '[%s]' % ';'.join(str(x)[1:-1] for x in matrix.tolist())
+        
+        print "matrix_to_string.converted = %s" % converted
+        
+        return converted
+        
+        
     #
     # Converts a string in the format
     #     '[1.0,2.0,3.0;4.0,5.0,6.0;7.0,8.0,9.0]'
