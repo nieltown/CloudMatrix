@@ -71,13 +71,7 @@ def getmatrix():
 	
 	name = request.args.get('name','')
 	
-	key = get_my_ip() + name
-	
-	print key
-	m = hashlib.md5()
-	m.update(get_my_ip() + name)
-	
-	key = m.digest()
+	key = ru.get_matrix_hash(get_my_ip(), name)
 	
 	value = ru.r.get(key)
 	
@@ -164,7 +158,8 @@ def index():
 			matrix_list.append(value_as_dict)
 		except:
 			pass
-		
+	
+	
 	return render_template('index.html', title='cloudmatrix', matrix_list=matrix_list, user=get_my_ip())
 # 	port = "80"
 # 	context = zmq.Context()
@@ -183,35 +178,12 @@ def index():
 # 	msg = socket.recv()
 #  	
 # 	return msg
-	
-
-def init_zk_hosts():
-	hosts = []
-	
-	z = open('/home/ubuntu/.zk_hosts')
-	
-	for line in z.readlines():
-		
-		hosts.append(line.replace('\r\n',''))
-	
-	host_string = ','.join(hosts)
-	
-	return host_string
 
 @app.route("/get_my_ip", methods=["GET"])
 def get_my_ip():
     return request.remote_addr
 
-def get_matrix_hash(matrix_name):
-	m = hashlib.md5()
-	ip = get_my_ip()
-				
-	m.update("%s%s" % (ip, matrix_name))
-	
-	return m.digest()
-
-host_string = init_zk_hosts()
-zk = zk_util.zk_util(host_string)
+zk = zk_util.zk_util('/home/ubuntu/.zk_hosts')
 
 print "getting endpoint"
 redis_endpoint = zk.get_redis_primary()
