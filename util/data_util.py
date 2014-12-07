@@ -26,3 +26,13 @@ class data_util():
         m.update("%s" % userid)
         
         return m.digest()
+    
+    
+    def get_md5(self, data):
+        
+        m = hashlib.md5()
+        
+        m.update("%s" % data)
+        
+        return m.digest()
+    
