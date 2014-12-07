@@ -1,5 +1,6 @@
 import hashlib
-    
+import numpy
+
 class data_util(): 
     
     #
@@ -35,4 +36,40 @@ class data_util():
         m.update("%s" % data)
         
         return m.digest()
+    
+    #
+    # Converts a string in the format
+    #     '[1.0,2.0,3.0;4.0,5.0,6.0;7.0,8.0,9.0]'
+    # to a NumPy matrix
+    def string_to_matrix(self, string):
+        
+#         rows = string[1:-1].split(';')
+#         
+#         matrix = None
+#         for row in rows:
+#             
+#             arr = numpy.fromstring(row,count=len(row.split(',')),sep=',')
+#             
+#             print matrix
+#             print arr
+#             
+#             if matrix is not None:
+#                 print "NOT FIRST"
+#                 matrix = numpy.vstack((matrix, arr))
+#             else:
+#                 print "FIRST ROW!"
+#                 matrix = arr
+                
+        matrix = numpy.matrix(string)
+        print matrix
+        print matrix.shape
+        
+        
+        matrix = numpy.matrix(str(matrix.tolist()))
+        print matrix.shape
+        
+        
+        return matrix
+        
+        
     
