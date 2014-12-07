@@ -43,31 +43,70 @@ class Computer():
     
     def list(self):
         
-        
+        print "Listin"
         
         return list
     
+    #
+    # Operands list should look like this:
+    #    ['left', 'right']
+    # where 'left' and 'right' are the two matrices you're adding
     def add(self, operand_list):
-        
-        sum = 0
         
         print "Computer.add.operand_list: %s" % operand_list
         
-        print operand_list
+        matrices = []
         
-        vals = []
-        
-        for operand in operand_list:
-            matrix_hash = self.du.get_matrix_hash(self.userid, operand)
-
-            matrix = self.ru.r.get(matrix_hash)
-            
-            if matrix:
-                matrix = ast.literal_eval(matrix)
-                vals.append(numpy.matrix(matrix['data']))
-        
+        for name in operand_list:
+            matrices.append(self.getmatrix(name))
                 
-        sum = numpy.add(vals[0], vals[1])
+        sum = numpy.add(matrices[0], matrices[1])
+        
+        print "All summed up"
         
         return sum
+    
+    #
+    # Operands list should look like this:
+    #    ['left', 'right']
+    # where 'left' and 'right' are the two matrices you're multiplying
+    def multiply(self, operand_list):
+        
+        print "Computer.add.operand_list: %s" % operand_list
+        
+        matrices = []
+        
+        for name in operand_list:
+            matrices.append(self.getmatrix(name))
+                
+        sum = numpy.multiply(matrices[0], matrices[1])
+        
+        print "All summed up"
+        
+        return sum
+    
+    
+    #
+    # Retrieves just the data of a matrix structure specified by its name
+    def getmatrix(self, name):
+        
+        print "Gettin that matrix"
+        
+        # Operands come in as a list, so the matrix name is actually the 
+        # first element in the parameter 'name'
+        name = name[0]
+        
+        matrix_hash = self.du.get_matrix_hash(self.userid, name)
+
+        matrix = self.ru.r.get(matrix_hash)
+        
+        matrix = ast.literal_eval(matrix)
+        
+        
+        return numpy.matrix(matrix['data'])
+        
+        
+        
+        
+        
             

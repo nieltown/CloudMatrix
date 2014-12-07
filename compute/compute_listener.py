@@ -12,7 +12,8 @@ socket.bind("tcp://*:%s" % port)
 
 rowlist = []
 
-operations = ['add', 'inverse', 'lu', 'transpose', 'multiply', 'list', 'create']
+operations = ['add', 'invert', 'lu', 'transpose', 'multiply', 'list', \
+              'create', 'getmatrix', 'multiply']
 
 while True:
     print "..."
@@ -25,9 +26,8 @@ while True:
     ip = tokens[1]
     operands = tokens[2:len(tokens)]
     
-    cc = cloudmatrix_compute.Computer(ip)
     
-    print tokens
+    cc = cloudmatrix_compute.Computer(ip)
     
     # Attempting a valid operation?
     if operation in operations:
@@ -36,7 +36,13 @@ while True:
         # the Computer
         opfunc = getattr(cc, operation)
         
-        msg = opfunc(operands)
+        
+        if len(operands) > 0:
+            print "At least onezo"
+            msg = opfunc(operands)
+        else:
+            print "Nonezo"
+            msg = opfunc()
     
     socket.send_string(str(msg))
 
