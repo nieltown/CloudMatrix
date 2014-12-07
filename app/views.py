@@ -9,6 +9,7 @@ import hashlib
 import random
 import ast
 
+import data_util
 import redis_util
 import zk_util
 from forms import UploadForm
@@ -46,13 +47,7 @@ def add():
 	A = request.args.get('A','')
 	B = request.args.get('B','')
 	
-	port = "80"
-	context = zmq.Context()
-	socket = context.socket(zmq.REQ)
- 	
-	compute_node = zk.get_compute_node()
- 
-	socket.connect("tcp://%s:%s" % (compute_node, port))
+	socket = get_socket()
  	
  	print "Sending..."
 	socket.send_string('add %s %s %s' % (get_my_ip(), A, B))
@@ -60,9 +55,9 @@ def add():
  	print "Sent!"
  	
  	print "Receiving..."
+ 	
 	msg = socket.recv()
-	print "Received!"
-
+	socket.close()
  	
 	return msg
 
@@ -71,56 +66,32 @@ def getmatrix():
 	
 	name = request.args.get('name','')
 	
-	key = ru.get_matrix_hash(get_my_ip(), name)
+	key = du.get_matrix_hash(get_my_ip(), name)
 	
 	value = ru.r.get(key)
 	
 	dict = ast.literal_eval(value)
 	
-	name = dict['name']
-	m = dict['m']
-	n = dict['n']
 	data = dict['data']
 	datamd5 = dict['datamd5']
 	
+	
 	return str(value)
 	
-	
 
-
+# Returns a list of all the data in Redis owned by the user
 @app.route('/data', methods = ['GET'])
 def get_data():
-	m = hashlib.md5()
- 	
- 	ip = get_my_ip()
- 	
- 	print ip
- 	
-	m.update(ip + 'A')
- 	
-	key = m.digest()
- 	
- 	if ru.r.get(key):
- 		return "key %s is present!" % key
- 	
-	value = {"name":"blah","m":35,"n":36}
- 	
-	print "key: %s" % key
- 	
-	ru.r.set(key, value)
-# 	
-# 	print "value: %s" % ru.r.get(key)
 	
-	print "getting keys"
-	keys = ru.r.keys()
+	socket = get_socket()
+ 	
+ 	socket.send_string("list %s" % get_my_ip())
 
-	response = ""	
-	for key in keys:
-# 		ru.r.delete(key)
-		print "key: %s" % key
-		print "\t%s" % ru.r.get(key)
+	msg = socket.recv()
 
-	return str(response)
+	socket.close()
+
+	return str(msg)
 
 @app.route('/', methods = ['GET','POST'])
 @app.route('/index', methods = ['GET','POST'])
@@ -131,6 +102,7 @@ def index():
 	keys = ru.r.keys()
 	
 	matrix_list = []
+	
 
 	for key in keys:
 		value = ru.r.get(key)
@@ -146,36 +118,66 @@ def index():
 	
 	
 	return render_template('index.html', title='cloudmatrix', matrix_list=matrix_list, user=get_my_ip())
-# 	port = "80"
-# 	context = zmq.Context()
-# 	socket = context.socket(zmq.REQ)
-#  	
-# 	compute_node = zk.get_compute_node()
-#  
-# 	socket.connect("tcp://%s:%s" % (compute_node, port))
-#  	
-# 	csv = open('/home/ubuntu/cloudmatrix/data/inverse_01.csv','r')
-#  
-# 	data = csv.read()
-#  
-# 	socket.send(data)
-#  
-# 	msg = socket.recv()
-#  	
-# 	return msg
 
 @app.route("/get_my_ip", methods=["GET"])
 def get_my_ip():
     return request.remote_addr
 
-print zk_util
+@app.route("/populate", methods=["GET"])
+def populate():
+	
+	name = request.args.get('name')
+	data = request.args.get('data')
+	datamd5 = get_md5(data)
+	userid = get_my_ip()
+	
+	socket = get_socket()
+	
+# 	socket.send_string('exists %s %s %s' % (userid, name, str(datamd5)))
+# 	
+# 	msg = socket.recv()
+	
+	msg = 'f'
+	
+	if msg == 't':
+		msg = "/populate: %s already exists for %s" % (name, userid)
+	else:
+		socket.send_string('create %s %s %s' % (userid, name, data))
+		msg = socket.recv()
+	
+	
+	return msg
+
+def get_socket():
+	
+	compute_node = zk.get_compute_node()
+ 
+ 	port = "80"
+	context = zmq.Context()
+	socket = context.socket(zmq.REQ)
+ 
+	socket.connect("tcp://%s:%s" % (compute_node, port))
+	
+	return socket
+
+def get_md5(data):
+        
+    m = hashlib.md5()
+    
+    m.update("%s" % data)
+    
+    return m.digest()
+   
+
 zk = zk_util.zk_util('/home/ubuntu/.zk_hosts')
 
 print "getting endpoint"
 redis_endpoint = zk.get_redis_primary()
+
 	
 print "Endpoint: %s" % redis_endpoint
 
 print "creating redis_util"
 ru = redis_util.redis_util(redis_endpoint)
 
+du = data_util.data_util()
