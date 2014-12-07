@@ -39,17 +39,33 @@ def upload():
 # (specified by name in user's scope)
 @app.route('/invert', methods = ['GET'])
 def invert():
-	return 'blech'
+	A = request.args.get('A','')
+	store = request.args.get('store','')
+	
+	socket = get_socket()
+	
+	msg = 'invert %s %s %s' % (get_my_ip(), A, store)
+	print "Sending... %s" % msg
+	socket.send_string(msg)
+	print "Sent!"
+	print "Receiving..."
+	msg = socket.recv()
+	socket.close()
+	
+	return msg
 
 @app.route('/add', methods = ['GET'])
 def add():
 	A = request.args.get('A','')
 	B = request.args.get('B','')
+	store = request.args.get('store','')
+	
+	print "store = %s" % store
 	
 	socket = get_socket()
  	
  	print "Sending..."
-	socket.send_string('add %s %s %s' % (get_my_ip(), A, B))
+	socket.send_string('add %s %s %s %s' % (get_my_ip(), A, B, store))
 
  	print "Sent!"
  	
@@ -64,11 +80,12 @@ def add():
 def multiply():
 	A = request.args.get('A','')
 	B = request.args.get('B','')
+	store = request.args.get('store','')
 	
 	socket = get_socket()
  	
  	print "Sending..."
-	socket.send_string('multiply %s %s %s' % (get_my_ip(), A, B))
+	socket.send_string('multiply %s %s %s %s' % (get_my_ip(), A, B, store))
 
  	print "Sent!"
  	
@@ -92,16 +109,14 @@ def getmatrix():
 	
 	socket.send_string("getmatrix %s %s" % (get_my_ip(), name))
 	
-	val = socket.recv()
-	
-	print val
+	val = socket.recv()	
 	
 	return val
 	
 
 # Returns a list of all the data in Redis owned by the user
-@app.route('/data', methods = ['GET'])
-def get_data():
+@app.route('/list', methods = ['GET'])
+def list():
 	
 	socket = get_socket()
  	
@@ -110,6 +125,9 @@ def get_data():
 	msg = socket.recv()
 
 	socket.close()
+
+	print msg
+
 
 	return str(msg)
 
@@ -143,8 +161,17 @@ def index():
 def get_my_ip():
     return request.remote_addr
 
-@app.route("/populate", methods=["GET"])
-def populate():
+@app.route("/doobies", methods=["GET"])
+def doobies():
+	socket = get_socket()
+	socket.send_string("doobies blah blah")
+	
+	msg = socket.recv()
+	
+	return msg
+
+@app.route("/create", methods=["GET"])
+def create():
 	
 	name = request.args.get('name')
 	data = request.args.get('data')
@@ -153,20 +180,26 @@ def populate():
 	
 	socket = get_socket()
 	
-# 	socket.send_string('exists %s %s %s' % (userid, name, str(datamd5)))
-# 	
-# 	msg = socket.recv()
+	socket.send_string('create %s %s %s' % (userid, name, data))
+	msg = socket.recv()
 	
-	msg = 'f'
-	
-	if msg == 't':
-		msg = "/populate: %s already exists for %s" % (name, userid)
-	else:
-		socket.send_string('create %s %s %s' % (userid, name, data))
-		msg = socket.recv()
-	
+	socket.close()
 	
 	return msg
+
+@app.route("/populate", methods=["GET"])
+def populate():
+	
+	socket = get_socket()
+	
+	socket.send_string('populate %s' % get_my_ip())
+	
+	msg = socket.recv()
+	
+	socket.close()
+	
+	return msg
+	
 
 def get_socket():
 	
