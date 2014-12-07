@@ -20,9 +20,30 @@ class Computer():
         self.ru = redis_util.redis_util(redis_endpoint)
         self.du = data_util.data_util()
     
-    def list(self, userid):
+    def create(self, operands):
         
-        list = self.get_matrices(userid)
+        name = operands[0]
+        data = operands[1]
+
+        key = self.du.get_matrix_hash(self.userid, name)
+        
+        matrix = numpy.matrix(data)
+        
+        value = {}
+        value['name'] = name
+        value['m'] = matrix.shape[0]
+        value['n'] = matrix.shape[1]
+        value['data'] = data
+        value['type'] = 'matrix'
+        value['datamd5'] = self.du.get_md5(data) 
+        
+        self.ru.r.set(key, str(value))
+        
+        return 'Compute.create: OK!'
+    
+    def list(self):
+        
+        
         
         return list
     
@@ -42,7 +63,11 @@ class Computer():
             matrix = self.ru.r.get(matrix_hash)
             
             if matrix:
-                vals.append(matrix)
+                matrix = ast.literal_eval(matrix)
+                vals.append(numpy.matrix(matrix['data']))
         
-        return vals
+                
+        sum = numpy.add(vals[0], vals[1])
+        
+        return sum
             
