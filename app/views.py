@@ -83,21 +83,6 @@ def getmatrix():
 	data = dict['data']
 	datamd5 = dict['datamd5']
 	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
-	
 	return str(value)
 	
 	
@@ -183,6 +168,7 @@ def index():
 def get_my_ip():
     return request.remote_addr
 
+print zk_util
 zk = zk_util.zk_util('/home/ubuntu/.zk_hosts')
 
 print "getting endpoint"
