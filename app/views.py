@@ -9,7 +9,6 @@ import hashlib
 import random
 import ast
 
-import data_util
 import redis_util
 import zk_util
 from forms import UploadForm
@@ -38,8 +37,8 @@ def upload():
 
 # Returns the inverse of a specified matrix 
 # (specified by name in user's scope)
-@app.route('/inverse', methods = ['GET'])
-def inverse():
+@app.route('/invert', methods = ['GET'])
+def invert():
 	return 'blech'
 
 @app.route('/add', methods = ['GET'])
@@ -61,22 +60,43 @@ def add():
  	
 	return msg
 
+@app.route('/multiply', methods = ['GET'])
+def multiply():
+	A = request.args.get('A','')
+	B = request.args.get('B','')
+	
+	socket = get_socket()
+ 	
+ 	print "Sending..."
+	socket.send_string('multiply %s %s %s' % (get_my_ip(), A, B))
+
+ 	print "Sent!"
+ 	
+ 	print "Receiving..."
+ 	
+	msg = socket.recv()
+	socket.close()
+ 	
+	return msg
+
+
+
 @app.route('/getmatrix', methods = ['GET'])
 def getmatrix():
 	
 	name = request.args.get('name','')
 	
-	key = du.get_matrix_hash(get_my_ip(), name)
+# 	key = du.get_matrix_hash(get_my_ip(), name)
+
+	socket = get_socket()
 	
-	value = ru.r.get(key)
+	socket.send_string("getmatrix %s %s" % (get_my_ip(), name))
 	
-	dict = ast.literal_eval(value)
+	val = socket.recv()
 	
-	data = dict['data']
-	datamd5 = dict['datamd5']
+	print val
 	
-	
-	return str(value)
+	return val
 	
 
 # Returns a list of all the data in Redis owned by the user
@@ -180,4 +200,3 @@ print "Endpoint: %s" % redis_endpoint
 print "creating redis_util"
 ru = redis_util.redis_util(redis_endpoint)
 
-du = data_util.data_util()
