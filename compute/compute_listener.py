@@ -12,9 +12,7 @@ socket.bind("tcp://*:%s" % port)
 
 rowlist = []
 
-operations = ['add', 'inverse', 'lu', 'transpose', 'multiply']
-
-
+operations = ['add', 'inverse', 'lu', 'transpose', 'multiply', 'list']
 
 while True:
     print "..."
@@ -40,9 +38,10 @@ while True:
         
         msg = opfunc(operands)
     
+    print "msg: %s" % msg
     
     
-    socket.send_string(msg)
+    socket.send_string(str(msg))
 #     rowlist = []
 # 
 #     for line in msg.split('\n'):
